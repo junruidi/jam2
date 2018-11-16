@@ -1,9 +1,56 @@
 #' @title Multilelvel Principal Component Analysis
 #' @description Conduct multilevel (functional) principal component analysis.
+#' A mixed model framework is used to estimate scores and obtain variance estimates.
 #'
-#' @param Y \code{matrix} with columns as variables/grid points, and rows as subject-visit
-#' @param id \code{vector} containing ids with repeatitions
-
+#' @param Y \code{matrix} with columns as variables/grid points, and rows as subject-visit, must be supplied.
+#' @param id Must be supplied, a vector containing the id information used to identify clusters.
+#' @param twoway logical, indicating whether to carry out twoway ANOVA and calculate
+#' visit-specific means. Defaults to \code{FALSE}.
+#' @param cov.method covariance estimation approaches.
+#' @param pve proportion of variance explained: used to choose the number of principal components.
+#' @param tlength For functional data,the length of the interval that the functions are
+#' evaluated at. Defualt to be number of grid points which is exactly number of variables
+#' for multivariate data.
+#' @param smoothing logical, indicating whether smoothing should be carried out or not, only use this
+#' for functional data.
+#' @param smooth.method Method of smoothing, "sf" indicates directly smoothing the functions using gam.
+#' "sc" indicates smoothing the covariance using penalized smoothing splines.
+#' @param nk number of knots for the smoothing
+#'
+#' @return An object of class \code{mpca} containing:
+#' \item{Y.df}{The original data.}
+#' \item{mu}{estimated mean function.}
+#' \item{eta}{the estimated visit specific shifts from overall mean.}
+#' \item{npc}{number of PCs.}
+#' \item{pctvar}{percentage of variation explained by the kept pcs.}
+#' \item{evectors}{level 1/2 eigen vectors/functions.}
+#' \item{evalues}{level 1/2 eigen values.}
+#' \item{scores}{level 1/2 pc scores.}
+#'
+#' @importFrom mgcv gam
+#' @importFrom dplyr %>% group_by slice
+#' @importFrom ICSNP pair.diff
+#' @importFrom SemiPar spm predict.spm
+#' @importFrom  MASS ginv
+#' @importFrom stats ave
+#'
+#' @references Di, C., Crainiceanu, C., Caffo, B., and Punjabi, N. (2009).
+#' Multilevel functional principal component analysis. \emph{Annals of Applied
+#' Statistics}, 3, 458--488.
+#'
+#' Di, C., Crainiceanu, C., Caffo, B., and Punjabi, N. (2014).
+#' Multilevel sparse functional principal component analysis. \emph{Stat}, 3, 126--143.
+#'
+#' Goldsmith, J., Greven, S., and Crainiceanu, C. (2013). Corrected confidence
+#' bands for functional data using principal components. \emph{Biometrics},
+#' 69(1), 41--51.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' mpca.y = mfpca.sc(Y = Y, id = id, twoway = T, cov.method = "m1")
+#' }
 
 
 multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
@@ -11,7 +58,8 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
                           tlength = ncol(Y),
                           smoothing = FALSE, smooth.method = c("sf","sc") ,nk = 15){
 
-
+  x1 = x2 = NULL
+  rm(list = c("x1","x2"))
   # 1. Preliminary check on all possible mistakes ---------------------------
   stopifnot((!is.null(Y) && !is.null(id)))
   if(length(id) != nrow(Y)){
@@ -204,29 +252,30 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
   ###     this option will smooth Gw(s,t) and Gb(s,t) before carrying out principal component
   ###     analysis. This step will reduce the bias in estimating eigenvalues and generate
   ###     smooth eigenfunctions.
-  if(smoothing==TRUE & smooth.method == "sc") {
+  if(smoothing == TRUE & smooth.method == "sc") {
     gw.temp = Gw
     diag(gw.temp) = rep(NA, N)
 
-    data.gb = data.frame(gb=as.vector(Gb),gw=as.vector(gw.temp),
-                         x1=rep(seq(0,1,length=N), N), x2=rep(seq(0,1,length=N), each=N))
-    attach(data.gb)
+    data.gb = data.frame(gb = as.vector(Gb),gw = as.vector(gw.temp),
+                         x1 = rep(seq(0,1,length = N), N), x2 = rep(seq(0,1,length = N), each = N))
+    # attach(data.gb)
 
 
-    myknots = data.frame(x1=rep(seq(0,1,length=nk),each=nk), x2=rep(seq(0,1,length=nk),nk))
-    fit1= spm(gb ~ f(x1, x2,knots=myknots))
-    fit= spm(gw ~ f(x1, x2,knots=myknots),omit.missing=T)
-    newdata = data.frame(x1=x1,x2=x2)
-    pred1 = predict(fit1,newdata)
-    pred = predict(fit,newdata)
+    myknots = data.frame(x1 = rep(seq(0,1,length = nk),each = nk), x2 = rep(seq(0,1,length = nk),nk))
+    fit1 = spm(data.gb$gb ~ f(data.gb$x1, data.gb$x2,knots = myknots))
+    fit = spm(data.gb$gw ~ f(data.gb$x1, data.gb$x2,knots = myknots),omit.missing = T)
+    newdata = data.frame(x1 = data.gb$x1,x2 = data.gb$x2)
+    pred1 = predict.spm(fit1,newdata)
+    pred = predict.spm(fit,newdata)
 
 
     var.noise = mean( diag(Gw) - diag(matrix(pred,N,N)) )
-    s.gw =matrix(pred,N,N)
+    s.gw = matrix(pred,N,N)
     Gw = (s.gw + t(s.gw) )/2
     s.gb = matrix(pred1, N,N)
     Gb = (s.gb + t(s.gb))/2
   }
+
 
   #########################################################################################
 

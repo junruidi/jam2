@@ -1,5 +1,4 @@
 Package: jam2
-Type: Package
 Title: Joint Analysis of Multilevel and Multi-domain data
 Version: 0.1.0
 Author: c(
@@ -12,14 +11,15 @@ Author: c(
       )
 Maintainer: Junrui Di <jdi2@jhu.edu>
 License: GPL-3 + file LICENSE
-Description: Joint Analysis of Multilevel and Multi-domain data
+Description: This package provides a general dimension reduction framework to jointly analyze multilevel and multidomain data.
 Imports:
     refund,
     dplyr,
     SemiPar,
     ICSNP,
     MASS,
-    mgcv
+    mgcv,
+    stats
 Depends:
     R (>= 2.10),
 Suggests:
@@ -34,4 +34,4 @@ Type: Package
 VignetteBuilder: knitr
 URL: https://github.com/junruidi/actigraphy
 BugReports: https://github.com/junruidi/actigraphy/issues
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
