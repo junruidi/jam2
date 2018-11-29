@@ -71,7 +71,7 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
   }
 
   if(smoothing  == FALSE){
-    smooth.method = NULL
+    smooth.method = "nothing"
     nk = NULL
   }
 
