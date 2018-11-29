@@ -9,9 +9,9 @@ multilevel_pca(Y = NULL, id = NULL, twoway = TRUE,
   smoothing = FALSE, smooth.method = c("sf", "sc"), nk = 15)
 }
 \arguments{
-\item{Y}{\code{matrix} with columns as variables/grid points, and rows as subject-visit}
+\item{Y}{\code{matrix} with columns as variables/grid points, and rows as subject-visit, must be supplied.}
 
-\item{id}{\code{vector} containing ids with repeatitions.}
+\item{id}{Must be supplied, a vector containing the id information used to identify clusters.}
 
 \item{twoway}{logical, indicating whether to carry out twoway ANOVA and calculate
 visit-specific means. Defaults to \code{FALSE}.}
