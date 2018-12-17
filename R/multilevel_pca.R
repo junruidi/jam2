@@ -22,7 +22,8 @@
 #' \item{mu}{estimated mean function.}
 #' \item{eta}{the estimated visit specific shifts from overall mean.}
 #' \item{npc}{number of PCs.}
-#' \item{pctvar}{percentage of variation explained by the kept pcs.}
+#' \item{pctvar}{percentage of variation explained by the kept pcs within each level.}
+#' \item{varofTot}{percentage of variation of the total variability explained by level 1 and level 2.}
 #' \item{evectors}{level 1/2 eigen vectors/functions.}
 #' \item{evalues}{level 1/2 eigen values.}
 #' \item{scores}{level 1/2 pc scores.}
@@ -284,6 +285,12 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
   e1 = eigen(Gb)
   e2 = eigen(Gw)
 
+  ###     Estimate amount of variability explained by X and W
+  pw = sum(diag(Gw))/sum(diag(Gt))
+  px = 1 - pw
+
+
+
   ###    get eigen values
   fpca1.value = e1$values * kx
   fpca2.value = e2$values * kx
@@ -387,9 +394,10 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
   evectors = list(fpca1.vectors[,1:K1], fpca2.vectors[,1:K2])
   scores = list(s1, s2)
   pctvar = list(percent1[1:K1], percent2[1:K2])
+  varofTot = list(px, pw)
 
-  names(evectors) = names(evalues) = names(npc) = names(scores) = names(pctvar) =c("level1", "level2")
-  ret.objects = c("Y.df", "mu", "eta","npc", "pctvar","evectors", "evalues", "scores")
+  names(evectors) = names(evalues) = names(npc) = names(scores) = names(pctvar) = names(varofTot) = c("level1", "level2")
+  ret.objects = c("Y.df", "mu", "eta","npc", "pctvar","varofTot","evectors", "evalues", "scores")
   ret = lapply(1:length(ret.objects), function(u) get(ret.objects[u]))
   names(ret) = ret.objects
   class(ret) = "mpca"

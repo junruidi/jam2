@@ -32,6 +32,6 @@ LazyData: TRUE
 ByteCompile: true
 Type: Package
 VignetteBuilder: knitr
-URL: https://github.com/junruidi/actigraphy
-BugReports: https://github.com/junruidi/actigraphy/issues
+URL: https://github.com/junruidi/jam2
+BugReports: https://github.com/junruidi/jam2/issues
 RoxygenNote: 6.1.1

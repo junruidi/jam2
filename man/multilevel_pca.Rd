@@ -38,7 +38,8 @@ An object of class \code{mpca} containing:
 \item{mu}{estimated mean function.}
 \item{eta}{the estimated visit specific shifts from overall mean.}
 \item{npc}{number of PCs.}
-\item{pctvar}{percentage of variation explained by the kept pcs.}
+\item{pctvar}{percentage of variation explained by the kept pcs within each level.}
+\item{varofTot}{percentage of variation of the total variability explained by level 1 and level 2.}
 \item{evectors}{level 1/2 eigen vectors/functions.}
 \item{evalues}{level 1/2 eigen values.}
 \item{scores}{level 1/2 pc scores.}
