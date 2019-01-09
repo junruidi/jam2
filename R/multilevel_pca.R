@@ -137,9 +137,9 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
     Y.df.new = Y.df.new[order(Y.df.new$id, Y.df.new$visit),  ]
     Y.tilde = Y.df.new$Y.tilde
   }else{
-    Y.tilde = Y - matrix(mu, I, N, byrow = TRUE)
-    Y.df.new = Y.df
-    Y.df.new$Y.tilde = Y.tilde
+    Y.df.new = Y.df[order(Y.df$id, Y.df$visit),  ]
+    Y.df.new$Y.tilde = Y.df.new$Y - matrix(mu, I, N, byrow = TRUE)
+    Y.tilde = Y.df.new$Y.tilde
   }
 
   #########################################################################################
@@ -338,7 +338,7 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
   # 7. Get level 1/2 PC scores based on the projection methods by so --------
 
   id.visit.dat = Y.df.new[,c(1:2)]
-  id.visit.dat = as.data.frame(cbind(id.visit.dat,Y.tilde))
+  id.visit.dat = as.data.frame(cbind(id.visit.dat,Y.df.new$Y.tilde))
 
   id.visit.all = data.frame(id = rep(uni.id, each = J), visit = rep(c(1:J), M))
 
@@ -373,14 +373,14 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
   }
 
   s1 = as.data.frame(cbind(dat[,1:2],s1)) %>% group_by(id) %>% slice(1)
-  s1$id = s1$visit = NULL
+  s1$visit = NULL
+  names(s1)[2:ncol(s1)] = paste0("lv1_",names(s1)[2:ncol(s1)])
 
   s2 = as.data.frame(cbind(dat[,1:2],s2))
   s2 = merge(x = Y.df.new[,c(1:2)], y = s2, all.x = T)
-  s2$id = s2$visit = NULL
+  names(s2)[3:ncol(s2)] = paste0("lv2_",names(s2)[3:ncol(s2)])
+  # s2$id = s2$visit = NULL
 
-  s1 = as.matrix(s1)
-  s2 = as.matrix(s2)
 
 
 
@@ -395,6 +395,7 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
   scores = list(s1, s2)
   pctvar = list(percent1[1:K1], percent2[1:K2])
   varofTot = list(px, pw)
+  Y.df = Y.df.new[,-4]
 
   names(evectors) = names(evalues) = names(npc) = names(scores) = names(pctvar) = names(varofTot) = c("level1", "level2")
   ret.objects = c("Y.df", "mu", "eta","npc", "pctvar","varofTot","evectors", "evalues", "scores")
