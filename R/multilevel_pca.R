@@ -263,11 +263,14 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
 
 
     myknots = data.frame(x1 = rep(seq(0,1,length = nk),each = nk), x2 = rep(seq(0,1,length = nk),nk))
-    fit1 = spm(data.gb$gb ~ f(data.gb$x1, data.gb$x2,knots = myknots))
-    fit = spm(data.gb$gw ~ f(data.gb$x1, data.gb$x2,knots = myknots),omit.missing = T)
-    newdata = data.frame(x1 = data.gb$x1,x2 = data.gb$x2)
+    attach(data.gb)
+    fit1 = spm(gb ~ f(x1, x2,knots=myknots))
+    fit =  spm(gw ~ f(x1, x2,knots=myknots),omit.missing=T)
+    newdata <- data.frame(x1=x1,x2=x2)
     pred1 = predict.spm(fit1,newdata)
     pred = predict.spm(fit,newdata)
+
+
 
 
     var.noise = mean( diag(Gw) - diag(matrix(pred,N,N)) )
