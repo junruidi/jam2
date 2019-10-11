@@ -263,6 +263,7 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
 
 
     myknots = data.frame(x1 = rep(seq(0,1,length = nk),each = nk), x2 = rep(seq(0,1,length = nk),nk))
+
     attach(data.gb)
     fit1 = spm(gb ~ f(x1, x2,knots=myknots))
     fit =  spm(gw ~ f(x1, x2,knots=myknots),omit.missing=T)
