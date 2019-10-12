@@ -59,8 +59,8 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
                           tlength = ncol(Y),
                           smoothing = FALSE, smooth.method = c("sf","sc") ,nk = 15){
 
-  x1 = x2 = NULL
-  rm(list = c("x1","x2"))
+  x1 = x2 = myknots = NULL
+  rm(list = c("x1","x2","myknots"))
   # 1. Preliminary check on all possible mistakes ---------------------------
   stopifnot((!is.null(Y) && !is.null(id)))
   if(length(id) != nrow(Y)){
@@ -113,6 +113,7 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
   cum_visit_number = cumsum(num_visit)
 
   kx = tlength/N
+
 
   #########################################################################################
 
@@ -230,7 +231,7 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
 
     g1 = colSums(Y.df.new$Y.tilde) %*% t(colSums(Y.df.new$Y.tilde))
     g2 = matrix(0,N,N)
-    for(i in 1:M){
+    for(m in 1:M){
       Y.tilde.m = subset(Y.df.new, id == uni.id[m])$Y.tilde
       y.ij.sum = colSums(Y.tilde.m)
       g2 = g2 + y.ij.sum %*% t(y.ij.sum)
@@ -259,14 +260,16 @@ multilevel_pca = function(Y = NULL, id = NULL, twoway = TRUE,
 
     data.gb = data.frame(gb = as.vector(Gb),gw = as.vector(gw.temp),
                          x1 = rep(seq(0,1,length = N), N), x2 = rep(seq(0,1,length = N), each = N))
-    # attach(data.gb)
-
+    attach(data.gb)
 
     myknots = data.frame(x1 = rep(seq(0,1,length = nk),each = nk), x2 = rep(seq(0,1,length = nk),nk))
 
-    attach(data.gb)
-    fit1 = spm(gb ~ f(x1, x2,knots=myknots))
-    fit =  spm(gw ~ f(x1, x2,knots=myknots),omit.missing=T)
+
+
+
+    # attach(data.gb)
+    fit1 = spm(gb ~ f(x1, x2,knots = myknots))
+    fit =  spm(gw ~ f(x1, x2,knots = myknots),omit.missing=T)
     newdata <- data.frame(x1=x1,x2=x2)
     pred1 = predict.spm(fit1,newdata)
     pred = predict.spm(fit,newdata)
